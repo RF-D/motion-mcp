@@ -1,0 +1,67 @@
+{
+  "name": "motion-mcp",
+  "version": "0.1.0",
+  "description": "Unofficial MCP server for Motion (usemotion.com) - AI-powered calendar & task management. Integrate Motion with Claude and other AI assistants",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "motion-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE",
+    "docs/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RF-D/motion-mcp.git"
+  },
+  "homepage": "https://github.com/RF-D/motion-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/RF-D/motion-mcp/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "motion",
+    "usemotion",
+    "task-management",
+    "productivity",
+    "api",
+    "claude",
+    "ai-assistant",
+    "automation"
+  ],
+  "author": "Raul Diaz",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "p-queue": "^8.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
