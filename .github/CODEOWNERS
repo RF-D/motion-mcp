@@ -1,0 +1,16 @@
+# This file defines who owns what parts of the codebase
+# These owners will be automatically requested for review when someone opens a pull request
+
+# Global owners for all files
+* @RF-D
+
+# API client and core functionality
+/src/api/ @RF-D
+/src/types/ @RF-D
+
+# Tool implementations
+/src/tools/ @RF-D
+
+# Documentation
+*.md @RF-D
+/docs/ @RF-D
