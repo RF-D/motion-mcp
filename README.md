@@ -10,38 +10,31 @@
 
 ## Quick Start
 
-### Installation
+### Step 1: Get Your Motion API Key
 
-#### Via Claude Code CLI (Recommended)
+1. Log into [Motion](https://usemotion.com)
+2. Navigate to Settings → API
+3. Create a new API key
+4. Copy the key immediately (it's only shown once!)
+
+### Step 2: Install the MCP Server
+
+Run this command to add the Motion MCP server to Claude:
+
 ```bash
 claude mcp add motion npx -- -y @rf-d/motion-mcp
 ```
 
-#### Via NPM
-```bash
-npx @rf-d/motion-mcp
-```
+### Step 3: Add Your API Key
 
-#### Via GitHub
-```bash
-git clone https://github.com/RF-D/motion-mcp.git
-cd motion-mcp
-npm install
-npm run build
-```
+The above command creates the configuration, but you need to manually add your API key:
 
-### Configuration
+1. Open your Claude configuration file:
+   - **macOS**: `~/Library/Application Support/Claude/claude.json`
+   - **Windows**: `%APPDATA%\Claude\claude.json`
+   - **Linux**: `~/.config/claude/claude.json`
 
-1. **Get your Motion API key**:
-   - Log into [Motion](https://usemotion.com)
-   - Navigate to Settings → API
-   - Create a new API key
-   - Copy the key (shown only once)
-
-2. **Add to your MCP client configuration**:
-
-#### For Claude Desktop
-Edit `~/Library/Application Support/Claude/claude.json`:
+2. Find the `motion` entry that was just added and update it to include your API key:
 
 ```json
 {
@@ -57,11 +50,40 @@ Edit `~/Library/Application Support/Claude/claude.json`:
 }
 ```
 
-#### For Development
-Create a `.env` file:
+3. Save the file and restart Claude Desktop
+
+### Alternative Installation Methods
+
+#### Via GitHub (Development)
 ```bash
-MOTION_API_KEY=your_motion_api_key_here
-MOTION_RATE_LIMIT_PER_MINUTE=12  # 12 for individual, 120 for teams
+git clone https://github.com/RF-D/motion-mcp.git
+cd motion-mcp
+npm install
+npm run build
+
+# Create a .env file with your API key
+echo "MOTION_API_KEY=your_motion_api_key_here" > .env
+
+# Run in development mode
+npm run dev
+```
+
+#### Manual Configuration
+If you prefer to manually configure without using the CLI, add this to your `claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "motion": {
+      "command": "npx",
+      "args": ["-y", "@rf-d/motion-mcp"],
+      "env": {
+        "MOTION_API_KEY": "your_motion_api_key_here",
+        "MOTION_RATE_LIMIT_PER_MINUTE": "12"  // 12 for individual, 120 for teams
+      }
+    }
+  }
+}
 ```
 
 ## Features
@@ -215,10 +237,29 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This is an unofficial integration and is not affiliated with, officially maintained, or endorsed by Motion. Use at your own discretion.
 
+## Troubleshooting
+
+### Common Issues
+
+**"Motion API key not found" error**
+- Make sure you've added the `MOTION_API_KEY` to your claude.json configuration
+- Verify the key is correct and hasn't expired
+- Restart Claude Desktop after adding the key
+
+**"Rate limit exceeded" error**
+- Individual accounts are limited to 12 requests per minute
+- Team accounts get 120 requests per minute
+- The server automatically handles rate limiting, but very heavy usage may still hit limits
+
+**"Command not found" error**
+- Make sure you have Node.js >= 20.0.0 installed
+- Try running with the full path: `npx @rf-d/motion-mcp`
+
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/RF-D/motion-mcp/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/RF-D/motion-mcp/discussions)
+- **NPM Package**: [npmjs.com/package/@rf-d/motion-mcp](https://www.npmjs.com/package/@rf-d/motion-mcp)
 
 ---
 
