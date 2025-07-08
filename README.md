@@ -14,12 +14,12 @@
 
 #### Via Claude Code CLI (Recommended)
 ```bash
-claude mcp add motion npx -- -y motion-mcp
+claude mcp add motion npx -- -y @rf-d/motion-mcp
 ```
 
 #### Via NPM
 ```bash
-npx motion-mcp
+npx @rf-d/motion-mcp
 ```
 
 #### Via GitHub
@@ -48,7 +48,7 @@ Edit `~/Library/Application Support/Claude/claude.json`:
   "mcpServers": {
     "motion": {
       "command": "npx",
-      "args": ["-y", "motion-mcp"],
+      "args": ["-y", "@rf-d/motion-mcp"],
       "env": {
         "MOTION_API_KEY": "your_motion_api_key_here"
       }

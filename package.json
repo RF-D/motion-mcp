@@ -1,5 +1,5 @@
 {
-  "name": "motion-mcp",
+  "name": "@rf-d/motion-mcp",
   "version": "0.1.0",
   "description": "Unofficial MCP server for Motion (usemotion.com) - AI-powered calendar & task management. Integrate Motion with Claude and other AI assistants",
   "main": "dist/index.js",
