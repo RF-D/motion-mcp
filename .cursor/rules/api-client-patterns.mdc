@@ -1,0 +1,79 @@
+# API Client Patterns
+
+## Client Structure
+
+The [src/api/client.ts](mdc:src/api/client.ts) implements the `MotionApiClient` class with:
+
+- **Axios instance** with base configuration
+- **Rate limiting** using `p-queue` (configurable via environment)
+- **Error handling** with proper HTTP status interpretation
+- **Request queuing** to respect Motion API limits
+
+## HTTP Methods
+
+- **GET**: List and retrieve operations
+- **POST**: Create operations  
+- **PATCH**: Update operations
+- **DELETE**: Delete operations
+
+## Rate Limiting
+
+- Default: **12 requests per minute** (configurable via `MOTION_RATE_LIMIT_PER_MINUTE`)
+- Uses **p-queue** with `concurrency: 1` and `intervalCap`
+- All requests go through the rate-limited queue
+
+## Error Handling Pattern
+
+```typescript
+if (status === 429) {
+  throw new Error(`Rate limit exceeded. Please try again later. ${message}`);
+} else if (status === 401) {
+  throw new Error(`Authentication failed. Check your API key. ${message}`);
+} else if (status === 404) {
+  throw new Error(`Resource not found. ${message}`);
+}
+```
+
+## Request Method Pattern
+
+```typescript
+private async request<T>(method: string, path: string, data?: any, params?: any): Promise<T> {
+  return this.queue.add(async () => {
+    const response = await this.axios.request<T>({
+      method,
+      url: path,
+      data,
+      params,
+    });
+    return response.data;
+  }) as Promise<T>;
+}
+```
+
+## API Method Patterns
+
+- **List methods**: Accept optional filter parameters, return arrays
+- **Get methods**: Take ID parameter, return single object
+- **Create methods**: Take creation parameters, return created object
+- **Update methods**: Take ID + update parameters, return updated object
+- **Delete methods**: Take ID parameter, return void
+
+## Type Safety
+
+- All methods use **generic types** with Motion interfaces
+- Parameters use **specific interfaces** (e.g., `MotionTaskCreateParams`)
+- Return types match **Motion API response structures**
+
+## Configuration
+
+Configuration is loaded from [src/config.ts](mdc:src/config.ts):
+
+```typescript
+{
+  apiKey: string;           // MOTION_API_KEY (required)
+  baseUrl: string;          // MOTION_API_BASE_URL (optional)
+  rateLimitPerMinute: number; // MOTION_RATE_LIMIT_PER_MINUTE (optional)
+}
+```
+description: API client implementation patterns
+---

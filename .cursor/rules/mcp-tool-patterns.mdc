@@ -1,0 +1,80 @@
+# MCP Tool Implementation Patterns
+
+## Tool Structure
+
+Every MCP tool follows this structure from [src/types/tool.ts](mdc:src/types/tool.ts):
+
+```typescript
+{
+  name: string;           // Format: 'motion_action_resource'
+  description: string;    // Clear, actionable description
+  inputSchema: object;    // JSON Schema for parameters
+  handler: async function // Implementation with validation
+}
+```
+
+## Naming Convention
+
+- **Prefix**: All tools start with `motion_`
+- **Pattern**: `motion_<action>_<resource>` (e.g., `motion_create_task`)
+- **Actions**: `list`, `get`, `create`, `update`, `delete`, `move`, `complete`
+- **Resources**: `task`, `project`, `workspace`, `user`, `comment`, etc.
+
+## Input Schema Best Practices
+
+- Use **JSON Schema format** with `type: 'object'`
+- Include helpful **descriptions** for all properties
+- Mark **required fields** in the `required` array
+- Support **optional filtering** parameters for list operations
+- Use **enum arrays** for constrained values
+
+## Handler Implementation
+
+1. **Validation**: Use Zod schema to validate input
+2. **API Call**: Use the injected `MotionApiClient` instance
+3. **Response**: Return structured data, not raw API responses
+4. **Error Handling**: Let errors bubble up to the MCP error handler
+
+## Example Pattern
+
+```typescript
+{
+  name: 'motion_create_task',
+  description: 'Create a new task in Motion',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', description: 'Task title' },
+      workspaceId: { type: 'string', description: 'Workspace ID' },
+      // ... other properties
+    },
+    required: ['name', 'workspaceId'],
+  },
+  handler: async (args: unknown) => {
+    const schema = z.object({
+      name: z.string().min(1),
+      workspaceId: z.string().min(1),
+      // ... validation
+    });
+    
+    const validated = schema.parse(args);
+    return await client.createTask(validated);
+  },
+}
+```
+
+## Registration Pattern
+
+Export a `register*Tools()` function that takes the API client and returns Tool arrays:
+
+```typescript
+export function registerTaskTools(client: MotionApiClient): Tool[] {
+  return [
+    // ... tool objects
+  ];
+}
+```
+
+See [src/tools/task.ts](mdc:src/tools/task.ts) for a complete example.
+description: MCP tool implementation patterns and conventions
+---

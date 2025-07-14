@@ -1,0 +1,41 @@
+# TypeScript Conventions
+
+## Import/Export Patterns
+
+- Use **explicit `.js` extensions** in imports (required for ESM): `import { Tool } from '../types/tool.js'`
+- Use **named exports** for functions and classes
+- Use **default exports** sparingly, only for main entry points
+- Import types and interfaces with regular `import` statements
+
+## Type Safety
+
+- All function parameters should be **typed with interfaces** from [src/types/motion.ts](mdc:src/types/motion.ts)
+- Use **Zod schemas** for runtime validation in tool handlers
+- Prefer **interface over type** for object shapes
+- Use **string literal unions** for enums (e.g., `'HARD' | 'SOFT' | 'NONE'`)
+
+## Error Handling
+
+- Throw **descriptive errors** with proper error messages
+- Use **McpError** from `@modelcontextprotocol/sdk/types.js` for MCP-specific errors
+- Handle **AxiosError** in API client with proper status code interpretation
+
+## Code Organization
+
+- Keep tool implementations in individual files under `src/tools/`
+- Export a single `register*Tools()` function per tool file
+- Use consistent naming: `motion_` prefix for all tool names
+- Follow the pattern in [src/tools/task.ts](mdc:src/tools/task.ts) for new tools
+
+## Validation Pattern
+
+```typescript
+const schema = z.object({
+  required: z.string().min(1),
+  optional: z.string().optional(),
+});
+
+const validated = schema.parse(args);
+```
+globs: *.ts,*.tsx
+---
