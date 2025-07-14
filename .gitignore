@@ -29,7 +29,6 @@ out/
 
 # Claude
 .claude/
-CLAUDE.md
 claude.json
 .claude_files/
 
