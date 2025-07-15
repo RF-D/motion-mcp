@@ -33,7 +33,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_create_recurring_task',
-      description: 'Create a new recurring task',
+      description: 'Create a new recurring task template that will generate tasks automatically',
       inputSchema: {
         type: 'object',
         properties: {

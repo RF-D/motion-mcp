@@ -68,7 +68,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_create_task',
-      description: 'Create a new task in Motion',
+      description: 'Create a new task in Motion. Note: dueDate is required when duration is not "NONE" or when using autoScheduled.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -76,11 +76,11 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
           workspaceId: { type: 'string', description: 'Workspace ID' },
           dueDate: {
             type: 'string',
-            description: 'ISO 8601 due date (required for scheduled tasks)',
+            description: 'ISO 8601 due date. REQUIRED when: 1) duration is not "NONE" (i.e., "REMINDER" or minutes), or 2) autoScheduled is provided',
           },
           duration: {
             type: ['string', 'number'],
-            description: 'Duration: "NONE", "REMINDER", or minutes as integer',
+            description: 'Duration: "NONE" (no scheduling), "REMINDER" (requires dueDate), or minutes as integer (requires dueDate). Default: "NONE"',
           },
           status: { type: 'string', description: 'Task status (defaults to workspace default)' },
           autoScheduled: {
@@ -98,7 +98,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
               },
             },
             required: ['startDate', 'deadlineType'],
-            description: 'Auto-scheduling configuration (null to disable)',
+            description: 'Auto-scheduling configuration (requires dueDate). Set to null or omit to disable auto-scheduling.',
           },
           projectId: { type: 'string', description: 'Project ID to associate with' },
           description: {
@@ -155,18 +155,18 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_update_task',
-      description: 'Update an existing task',
+      description: 'Update an existing task. All fields are optional - only include fields you want to change.',
       inputSchema: {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID to update' },
           name: { type: 'string', description: 'New task title' },
-          dueDate: { type: 'string', description: 'New due date (ISO 8601)' },
+          dueDate: { type: 'string', description: 'New due date (ISO 8601). Note: Required if changing duration from "NONE" to a scheduled value' },
           duration: {
             type: ['string', 'number'],
-            description: 'Duration: "NONE", "REMINDER", or minutes',
+            description: 'Duration: "NONE" (unscheduled), "REMINDER", or minutes. Note: Changing from "NONE" requires dueDate',
           },
-          status: { type: 'string', description: 'New status' },
+          status: { type: 'string', description: 'New status (must exist in workspace). Use to mark tasks as completed by setting a resolved status' },
           priority: {
             type: 'string',
             enum: ['ASAP', 'HIGH', 'MEDIUM', 'LOW'],
@@ -196,7 +196,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
               },
             },
             required: ['startDate', 'deadlineType'],
-            description: 'Auto-scheduling configuration (null to disable)',
+            description: 'Auto-scheduling configuration. Set to null to disable auto-scheduling. Requires task to have a dueDate.',
           },
           customFieldValues: {
             type: 'object',
