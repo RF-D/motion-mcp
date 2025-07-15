@@ -155,11 +155,17 @@ export class MotionApiClient {
     status?: string[];
     workspaceId?: string;
   }): Promise<MotionListResponse<MotionTask>> {
+    // Filter out includeAllStatuses if it's false
+    const filteredParams = params ? { ...params } : undefined;
+    if (filteredParams && filteredParams.includeAllStatuses === false) {
+      delete filteredParams.includeAllStatuses;
+    }
+    
     const response = await this.request<{ meta: any; tasks: MotionTask[] }>(
       'GET',
       '/tasks',
       undefined,
-      params
+      filteredParams
     );
     return {
       meta: response.meta,
