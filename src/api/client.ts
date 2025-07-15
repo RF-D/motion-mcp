@@ -68,7 +68,7 @@ export class MotionApiClient {
   private async request<T>(method: string, path: string, data?: any, params?: any): Promise<T> {
     return this.queue.add(async () => {
       let lastError: any;
-      
+
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
         try {
           const response = await this.axios.request<T>({
@@ -80,24 +80,31 @@ export class MotionApiClient {
           return response.data;
         } catch (error: any) {
           lastError = error;
-          
+
           // Don't retry on client errors (4xx) except rate limits
-          if (error.response?.status >= 400 && error.response?.status < 500 && error.response?.status !== 429) {
+          if (
+            error.response?.status >= 400 &&
+            error.response?.status < 500 &&
+            error.response?.status !== 429
+          ) {
             throw error;
           }
-          
+
           // Retry on rate limit, network errors, or 5xx errors
           if (attempt < this.maxRetries - 1) {
-            const delay = error.response?.status === 429 
-              ? this.retryDelay * 2 // Double delay for rate limits
-              : this.retryDelay * (attempt + 1); // Exponential backoff
-              
-            console.log(`Retrying request to ${path} after ${delay}ms (attempt ${attempt + 1}/${this.maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            const delay =
+              error.response?.status === 429
+                ? this.retryDelay * 2 // Double delay for rate limits
+                : this.retryDelay * (attempt + 1); // Exponential backoff
+
+            console.log(
+              `Retrying request to ${path} after ${delay}ms (attempt ${attempt + 1}/${this.maxRetries})`
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
           }
         }
       }
-      
+
       throw lastError;
     }) as Promise<T>;
   }
@@ -113,7 +120,7 @@ export class MotionApiClient {
       // The API expects a comma-separated string, not an array
       queryParams.ids = params.ids.join(',');
     }
-    
+
     const response = await this.request<{ meta: any; workspaces: MotionWorkspace[] }>(
       'GET',
       '/workspaces',
@@ -176,7 +183,10 @@ export class MotionApiClient {
     return this.request<void>('DELETE', `/tasks/${taskId}`);
   }
 
-  async moveTask(taskId: string, params: { workspaceId: string; assigneeId?: string }): Promise<MotionTask> {
+  async moveTask(
+    taskId: string,
+    params: { workspaceId: string; assigneeId?: string }
+  ): Promise<MotionTask> {
     return this.request<MotionTask>('PATCH', `/tasks/${taskId}/move`, params);
   }
 
@@ -218,12 +228,9 @@ export class MotionApiClient {
   }
 
   async listUsers(workspaceId: string): Promise<MotionUser[]> {
-    const response = await this.request<{ users: MotionUser[] }>(
-      'GET',
-      '/users',
-      undefined,
-      { workspaceId }
-    );
+    const response = await this.request<{ users: MotionUser[] }>('GET', '/users', undefined, {
+      workspaceId,
+    });
     return response.users || [];
   }
 
@@ -274,7 +281,10 @@ export class MotionApiClient {
 
   // Custom field methods
   async listCustomFields(workspaceId: string): Promise<MotionCustomField[]> {
-    return this.request<MotionCustomField[]>('GET', `/beta/workspaces/${workspaceId}/custom-fields`);
+    return this.request<MotionCustomField[]>(
+      'GET',
+      `/beta/workspaces/${workspaceId}/custom-fields`
+    );
   }
 
   async createCustomField(params: {
@@ -284,10 +294,18 @@ export class MotionApiClient {
     metadata?: any;
   }): Promise<MotionCustomField> {
     const { workspaceId, ...body } = params;
-    return this.request<MotionCustomField>('POST', `/beta/workspaces/${workspaceId}/custom-fields`, body);
+    return this.request<MotionCustomField>(
+      'POST',
+      `/beta/workspaces/${workspaceId}/custom-fields`,
+      body
+    );
   }
 
-  async addCustomFieldToTask(taskId: string, customFieldInstanceId: string, value: any): Promise<void> {
+  async addCustomFieldToTask(
+    taskId: string,
+    customFieldInstanceId: string,
+    value: any
+  ): Promise<void> {
     return this.request<void>('POST', `/beta/custom-field-values/task/${taskId}`, {
       customFieldInstanceId,
       value,
@@ -306,21 +324,30 @@ export class MotionApiClient {
   }
 
   async removeCustomFieldFromTask(taskId: string, valueId: string): Promise<void> {
-    return this.request<void>('DELETE', `/beta/custom-field-values/task/${taskId}/custom-fields/${valueId}`);
+    return this.request<void>(
+      'DELETE',
+      `/beta/custom-field-values/task/${taskId}/custom-fields/${valueId}`
+    );
   }
 
   async deleteCustomField(workspaceId: string, customFieldId: string): Promise<void> {
-    return this.request<void>('DELETE', `/beta/workspaces/${workspaceId}/custom-fields/${customFieldId}`);
+    return this.request<void>(
+      'DELETE',
+      `/beta/workspaces/${workspaceId}/custom-fields/${customFieldId}`
+    );
   }
 
   async removeCustomFieldFromProject(projectId: string, valueId: string): Promise<void> {
-    return this.request<void>('DELETE', `/beta/custom-field-values/project/${projectId}/custom-fields/${valueId}`);
+    return this.request<void>(
+      'DELETE',
+      `/beta/custom-field-values/project/${projectId}/custom-fields/${valueId}`
+    );
   }
 
   // Recurring task methods
-  async listRecurringTasks(params?: { 
-    workspaceId?: string; 
-    cursor?: string; 
+  async listRecurringTasks(params?: {
+    workspaceId?: string;
+    cursor?: string;
   }): Promise<MotionListResponse<MotionRecurringTask>> {
     const response = await this.request<{ meta: any; recurringTasks: MotionRecurringTask[] }>(
       'GET',
@@ -357,14 +384,36 @@ export class MotionApiClient {
     return this.request<MotionRecurringTask>('GET', `/recurring-tasks/${recurringTaskId}`);
   }
 
-
   async deleteRecurringTask(recurringTaskId: string): Promise<void> {
     return this.request<void>('DELETE', `/recurring-tasks/${recurringTaskId}`);
   }
 
   // Status methods
   async listStatuses(workspaceId?: string): Promise<MotionStatus[]> {
-    const params = workspaceId ? { workspaceId } : undefined;
-    return this.request<MotionStatus[]>('GET', '/statuses', undefined, params);
+    // The /statuses endpoint requires a workspaceId parameter
+    // If no workspaceId is provided, we get statuses from all workspaces
+    if (workspaceId) {
+      const params = { workspaceId };
+      return this.request<MotionStatus[]>('GET', '/statuses', undefined, params);
+    }
+
+    // Get all workspaces and collect their unique statuses
+    const response = await this.listWorkspaces();
+    const allStatuses: MotionStatus[] = [];
+    const statusNames = new Set<string>();
+
+    for (const workspace of response.workspaces) {
+      if (workspace.taskStatuses) {
+        for (const status of workspace.taskStatuses) {
+          // Use status name as unique identifier since statuses don't have IDs
+          if (!statusNames.has(status.name)) {
+            statusNames.add(status.name);
+            allStatuses.push(status);
+          }
+        }
+      }
+    }
+
+    return allStatuses;
   }
 }

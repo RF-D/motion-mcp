@@ -1,6 +1,7 @@
 import { MotionApiClient } from '../api/client.js';
 import { z } from 'zod';
 import { Tool } from '../types/tool.js';
+import { MotionStatus } from '../types/motion.js';
 
 export function registerTaskTools(client: MotionApiClient): Tool[] {
   return [
@@ -68,7 +69,8 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_create_task',
-      description: 'Create a new task in Motion. Note: dueDate is required when duration is not "NONE" or when using autoScheduled.',
+      description:
+        'Create a new task in Motion. Note: dueDate is required when duration is not "NONE" or when using autoScheduled.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -76,11 +78,13 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
           workspaceId: { type: 'string', description: 'Workspace ID' },
           dueDate: {
             type: 'string',
-            description: 'ISO 8601 due date. REQUIRED when: 1) duration is not "NONE" (i.e., "REMINDER" or minutes), or 2) autoScheduled is provided',
+            description:
+              'ISO 8601 due date. REQUIRED when: 1) duration is not "NONE" (i.e., "REMINDER" or minutes), or 2) autoScheduled is provided',
           },
           duration: {
             type: ['string', 'number'],
-            description: 'Duration: "NONE" (no scheduling), "REMINDER" (requires dueDate), or minutes as integer (requires dueDate). Default: "NONE"',
+            description:
+              'Duration: "NONE" (no scheduling), "REMINDER" (requires dueDate), or minutes as integer (requires dueDate). Default: "NONE"',
           },
           status: { type: 'string', description: 'Task status (defaults to workspace default)' },
           autoScheduled: {
@@ -98,7 +102,8 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
               },
             },
             required: ['startDate', 'deadlineType'],
-            description: 'Auto-scheduling configuration (requires dueDate). Set to null or omit to disable auto-scheduling.',
+            description:
+              'Auto-scheduling configuration (requires dueDate). Set to null or omit to disable auto-scheduling.',
           },
           projectId: { type: 'string', description: 'Project ID to associate with' },
           description: {
@@ -155,18 +160,28 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_update_task',
-      description: 'Update an existing task. All fields are optional - only include fields you want to change.',
+      description:
+        'Update an existing task. All fields are optional - only include fields you want to change.',
       inputSchema: {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID to update' },
           name: { type: 'string', description: 'New task title' },
-          dueDate: { type: 'string', description: 'New due date (ISO 8601). Note: Required if changing duration from "NONE" to a scheduled value' },
+          dueDate: {
+            type: 'string',
+            description:
+              'New due date (ISO 8601). Note: Required if changing duration from "NONE" to a scheduled value',
+          },
           duration: {
             type: ['string', 'number'],
-            description: 'Duration: "NONE" (unscheduled), "REMINDER", or minutes. Note: Changing from "NONE" requires dueDate',
+            description:
+              'Duration: "NONE" (unscheduled), "REMINDER", or minutes. Note: Changing from "NONE" requires dueDate',
           },
-          status: { type: 'string', description: 'New status (must exist in workspace). Use to mark tasks as completed by setting a resolved status' },
+          status: {
+            type: 'string',
+            description:
+              'New status (must exist in workspace). Use to mark tasks as completed by setting a resolved status',
+          },
           priority: {
             type: 'string',
             enum: ['ASAP', 'HIGH', 'MEDIUM', 'LOW'],
@@ -196,7 +211,8 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
               },
             },
             required: ['startDate', 'deadlineType'],
-            description: 'Auto-scheduling configuration. Set to null to disable auto-scheduling. Requires task to have a dueDate.',
+            description:
+              'Auto-scheduling configuration. Set to null to disable auto-scheduling. Requires task to have a dueDate.',
           },
           customFieldValues: {
             type: 'object',
@@ -296,6 +312,93 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
 
         const validated = schema.parse(args);
         return await client.unassignTask(validated.taskId);
+      },
+    },
+    {
+      name: 'motion_complete_task',
+      description: 'Mark a task as completed by setting its status to a resolved status',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string', description: 'Task ID to complete' },
+          status: {
+            type: 'string',
+            description:
+              'Resolved status name (optional, uses first resolved status if not provided)',
+          },
+        },
+        required: ['taskId'],
+      },
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          taskId: z.string().min(1),
+          status: z.string().optional(),
+        });
+
+        const validated = schema.parse(args);
+
+        // If no status provided, we need to find a resolved status
+        let statusName = validated.status;
+        if (!statusName) {
+          // Get the task to find its workspace
+          const task = await client.getTask(validated.taskId);
+          // Get statuses for the workspace
+          const statuses = await client.listStatuses(task.workspace.id);
+          const resolvedStatus = statuses.find((s: MotionStatus) => s.isResolvedStatus);
+          if (!resolvedStatus) {
+            throw new Error('No resolved status found in workspace');
+          }
+          statusName = resolvedStatus.name;
+        }
+
+        return await client.updateTask(validated.taskId, { status: statusName });
+      },
+    },
+    {
+      name: 'motion_uncomplete_task',
+      description: 'Mark a task as not completed by setting its status to an unresolved status',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string', description: 'Task ID to uncomplete' },
+          status: {
+            type: 'string',
+            description: 'Unresolved status name (optional, uses default status if not provided)',
+          },
+        },
+        required: ['taskId'],
+      },
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          taskId: z.string().min(1),
+          status: z.string().optional(),
+        });
+
+        const validated = schema.parse(args);
+
+        // If no status provided, we need to find an unresolved status
+        let statusName = validated.status;
+        if (!statusName) {
+          // Get the task to find its workspace
+          const task = await client.getTask(validated.taskId);
+          // Get statuses for the workspace
+          const statuses = await client.listStatuses(task.workspace.id);
+          const unresolvedStatus = statuses.find(
+            (s: MotionStatus) => !s.isResolvedStatus && s.isDefaultStatus
+          );
+          if (!unresolvedStatus) {
+            // Fallback to any unresolved status
+            const anyUnresolvedStatus = statuses.find((s: MotionStatus) => !s.isResolvedStatus);
+            if (!anyUnresolvedStatus) {
+              throw new Error('No unresolved status found in workspace');
+            }
+            statusName = anyUnresolvedStatus.name;
+          } else {
+            statusName = unresolvedStatus.name;
+          }
+        }
+
+        return await client.updateTask(validated.taskId, { status: statusName });
       },
     },
   ];

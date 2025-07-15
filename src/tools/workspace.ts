@@ -6,7 +6,8 @@ export function registerWorkspaceTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_workspaces',
-      description: 'List all workspaces accessible to the authenticated user. Supports pagination and filtering by IDs.',
+      description:
+        'List all workspaces accessible to the authenticated user. Supports pagination and filtering by IDs.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -27,7 +28,7 @@ export function registerWorkspaceTools(client: MotionApiClient): Tool[] {
 
         const validated = schema.parse(args);
         const response = await client.listWorkspaces(validated);
-        
+
         return {
           workspaces: response.workspaces,
           meta: response.meta,

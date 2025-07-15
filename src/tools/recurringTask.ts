@@ -6,7 +6,8 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_recurring_tasks',
-      description: 'List all recurring tasks for a specific workspace. Supports pagination via cursor.',
+      description:
+        'List all recurring tasks for a specific workspace. Supports pagination via cursor.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -41,7 +42,8 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
           workspaceId: { type: 'string', description: 'Workspace ID' },
           frequency: {
             type: 'string',
-            description: 'Recurrence frequency (e.g., DAILY, WEEKLY_MONDAY, MONTHLY_1, MONTHLY_LAST)',
+            description:
+              'Recurrence frequency (e.g., DAILY, WEEKLY_MONDAY, MONTHLY_1, MONTHLY_LAST)',
           },
           recurrenceRule: { type: 'string', description: 'Custom recurrence rule (optional)' },
           duration: {
@@ -56,7 +58,10 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
             enum: ['HARD', 'SOFT'],
             description: 'Deadline type (default: SOFT)',
           },
-          startingOn: { type: 'string', description: 'ISO 8601 date when to start generating tasks' },
+          startingOn: {
+            type: 'string',
+            description: 'ISO 8601 date when to start generating tasks',
+          },
           idealTime: { type: 'string', description: 'Preferred time of day (HH:mm format)' },
           schedule: { type: 'string', description: 'Schedule name (default: "Work Hours")' },
           priority: {

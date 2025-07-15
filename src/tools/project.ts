@@ -55,8 +55,14 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
         properties: {
           name: { type: 'string', description: 'Project name' },
           workspaceId: { type: 'string', description: 'Workspace ID' },
-          description: { type: 'string', description: 'Project description (supports HTML/Markdown)' },
-          status: { type: 'string', description: 'Initial project status (must be valid for workspace)' },
+          description: {
+            type: 'string',
+            description: 'Project description (supports HTML/Markdown)',
+          },
+          status: {
+            type: 'string',
+            description: 'Initial project status (must be valid for workspace)',
+          },
           customFieldValues: {
             type: 'object',
             description: 'Custom field values as key-value pairs',

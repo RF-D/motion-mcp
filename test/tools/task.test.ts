@@ -67,9 +67,9 @@ test('Task Tools', async (t) => {
       }, (res) => {
         assertHasProperty(res, 'id');
         assertHasProperty(res, 'name');
-        assertHasProperty(res, 'workspaceId');
+        assertHasProperty(res, 'workspace');
         assert.strictEqual(res.name, taskName);
-        assert.strictEqual(res.workspaceId, testWorkspaceId);
+        assert.strictEqual(res.workspace.id, testWorkspaceId);
         testTaskId = res.id;
       });
       
@@ -95,7 +95,7 @@ test('Task Tools', async (t) => {
       const result = await testTool(getTool, { taskId: testTaskId }, (res) => {
         assertHasProperty(res, 'id');
         assertHasProperty(res, 'name');
-        assertHasProperty(res, 'workspaceId');
+        assertHasProperty(res, 'workspace');
         assertHasProperty(res, 'status');
         assert.strictEqual(res.id, testTaskId);
       });
