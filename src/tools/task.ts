@@ -140,7 +140,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
             .union([
               z.object({
                 startDate: z.string(),
-                deadlineType: z.enum(['HARD', 'SOFT', 'NONE']).optional(),
+                deadlineType: z.enum(['HARD', 'SOFT', 'NONE']),
                 schedule: z.string().optional(),
               }),
               z.null(),
@@ -239,7 +239,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
             .union([
               z.object({
                 startDate: z.string(),
-                deadlineType: z.enum(['HARD', 'SOFT', 'NONE']).optional(),
+                deadlineType: z.enum(['HARD', 'SOFT', 'NONE']),
                 schedule: z.string().optional(),
               }),
               z.null(),
