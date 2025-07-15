@@ -132,15 +132,14 @@ The server includes automatic rate limiting to comply with Motion's API limits:
 
 ## Available Tools
 
-### Task Management (8 tools)
+### Task Management (7 tools)
 - `motion_list_tasks` - List tasks with filtering and pagination
 - `motion_get_task` - Get detailed task information
 - `motion_create_task` - Create new tasks with auto-scheduling
 - `motion_update_task` - Update task properties
 - `motion_delete_task` - Delete tasks
-- `motion_move_task` - Move tasks between projects
-- `motion_complete_task` - Mark tasks as completed
-- `motion_uncomplete_task` - Mark tasks as not completed
+- `motion_move_task` - Move tasks between workspaces
+- `motion_unassign_task` - Remove assignee from task
 
 ### Project Management (3 tools)
 - `motion_list_projects` - List all projects
@@ -151,12 +150,14 @@ The server includes automatic rate limiting to comply with Motion's API limits:
 - `motion_list_workspaces` - List accessible workspaces
 - `motion_get_workspace` - Get workspace details
 
-### Additional Tools (19 tools)
+### Additional Tools (22 tools)
 - User management (3 tools)
 - Schedule management (1 tool)
 - Comment management (5 tools)
 - Custom field management (5 tools)
-- Recurring task management (5 tools)
+- Recurring task management (4 tools)
+- Schedule management (2 tools)
+- Status management (1 tool)
 
 ## Usage Examples
 

@@ -209,7 +209,6 @@ export interface MotionTaskUpdateParams {
   status?: string;
   priority?: 'ASAP' | 'HIGH' | 'MEDIUM' | 'LOW';
   description?: string;
-  completed?: boolean;
   assigneeId?: string;
   labels?: string[];
   workspaceId?: string;

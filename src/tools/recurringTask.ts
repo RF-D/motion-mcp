@@ -114,54 +114,6 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
       },
     },
     {
-      name: 'motion_update_recurring_task',
-      description: 'Update an existing recurring task',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          recurringTaskId: { type: 'string', description: 'Recurring task ID to update' },
-          name: { type: 'string', description: 'New name' },
-          frequency: {
-            type: 'string',
-            description: 'New frequency (e.g., DAILY, WEEKLY_MONDAY, MONTHLY_1, MONTHLY_LAST)',
-          },
-          recurrenceRule: { type: 'string', description: 'New recurrence rule' },
-          duration: {
-            type: ['string', 'number'],
-            description: 'New duration',
-          },
-          description: { type: 'string', description: 'New description' },
-          projectId: { type: 'string', description: 'New project ID' },
-          assigneeId: { type: 'string', description: 'New assignee ID' },
-        },
-        required: ['recurringTaskId'],
-      },
-      handler: async (args: unknown) => {
-        const schema = z.object({
-          recurringTaskId: z.string().min(1),
-          name: z.string().optional(),
-          frequency: z.string().optional(),
-          recurrenceRule: z.string().optional(),
-          duration: z.union([z.string(), z.number()]).optional(),
-          description: z.string().optional(),
-          projectId: z.string().optional(),
-          assigneeId: z.string().optional(),
-        });
-
-        const { recurringTaskId, ...updateParams } = schema.parse(args);
-
-        // Filter out undefined values
-        const filteredParams: any = {};
-        Object.keys(updateParams).forEach((key) => {
-          if ((updateParams as any)[key] !== undefined) {
-            filteredParams[key] = (updateParams as any)[key];
-          }
-        });
-
-        return await client.updateRecurringTask(recurringTaskId, filteredParams);
-      },
-    },
-    {
       name: 'motion_delete_recurring_task',
       description: 'Delete a recurring task permanently',
       inputSchema: {

@@ -357,16 +357,6 @@ export class MotionApiClient {
     return this.request<MotionRecurringTask>('GET', `/recurring-tasks/${recurringTaskId}`);
   }
 
-  async updateRecurringTask(
-    recurringTaskId: string,
-    params: Partial<MotionRecurringTask>
-  ): Promise<MotionRecurringTask> {
-    return this.request<MotionRecurringTask>(
-      'PATCH',
-      `/recurring-tasks/${recurringTaskId}`,
-      params
-    );
-  }
 
   async deleteRecurringTask(recurringTaskId: string): Promise<void> {
     return this.request<void>('DELETE', `/recurring-tasks/${recurringTaskId}`);

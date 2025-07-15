@@ -97,6 +97,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
                 description: 'Schedule name (must be "Work Hours" for other users)',
               },
             },
+            required: ['startDate', 'deadlineType'],
             description: 'Auto-scheduling configuration (null to disable)',
           },
           projectId: { type: 'string', description: 'Project ID to associate with' },
@@ -172,7 +173,6 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
             description: 'New priority',
           },
           description: { type: 'string', description: 'New description' },
-          completed: { type: 'boolean', description: 'Mark as completed/uncompleted' },
           assigneeId: { type: 'string', description: 'New assignee ID' },
           labels: {
             type: 'array',
@@ -195,6 +195,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
                 description: 'Schedule name',
               },
             },
+            required: ['startDate', 'deadlineType'],
             description: 'Auto-scheduling configuration (null to disable)',
           },
           customFieldValues: {
@@ -214,7 +215,6 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
           status: z.string().optional(),
           priority: z.enum(['ASAP', 'HIGH', 'MEDIUM', 'LOW']).optional(),
           description: z.string().optional(),
-          completed: z.boolean().optional(),
           assigneeId: z.string().optional(),
           labels: z.array(z.string()).optional(),
           workspaceId: z.string().optional(),
@@ -296,44 +296,6 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
 
         const validated = schema.parse(args);
         return await client.unassignTask(validated.taskId);
-      },
-    },
-    {
-      name: 'motion_complete_task',
-      description: 'Mark a task as completed',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          taskId: { type: 'string', description: 'Task ID to complete' },
-        },
-        required: ['taskId'],
-      },
-      handler: async (args: unknown) => {
-        const schema = z.object({
-          taskId: z.string().min(1),
-        });
-
-        const validated = schema.parse(args);
-        return await client.updateTask(validated.taskId, { completed: true });
-      },
-    },
-    {
-      name: 'motion_uncomplete_task',
-      description: 'Mark a task as not completed',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          taskId: { type: 'string', description: 'Task ID to uncomplete' },
-        },
-        required: ['taskId'],
-      },
-      handler: async (args: unknown) => {
-        const schema = z.object({
-          taskId: z.string().min(1),
-        });
-
-        const validated = schema.parse(args);
-        return await client.updateTask(validated.taskId, { completed: false });
       },
     },
   ];
