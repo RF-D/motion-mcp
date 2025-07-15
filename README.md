@@ -30,9 +30,9 @@ claude mcp add motion npx -- -y @rf-d/motion-mcp
 The above command creates the configuration, but you need to manually add your API key:
 
 1. Open your Claude configuration file:
-   - **macOS**: `~/Library/Application Support/Claude/claude.json`
-   - **Windows**: `%APPDATA%\Claude\claude.json`
-   - **Linux**: `~/.config/claude/claude.json`
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux**: `~/.config/claude/claude_desktop_config.json`
 
 2. Find the `motion` entry that was just added and update it to include your API key:
 
@@ -68,8 +68,32 @@ echo "MOTION_API_KEY=your_motion_api_key_here" > .env
 npm run dev
 ```
 
+**For development version, add this to your `claude_desktop_config.json` configuration:**
+
+```json
+{
+  "mcpServers": {
+    "motion": {
+      "command": "npm",
+      "args": [
+        "--prefix",
+        "/path/to/your/motion-mcp",
+        "--silent",
+        "run",
+        "start"
+      ],
+      "env": {
+        "MOTION_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+Replace `/path/to/your/motion-mcp` with the actual path to your cloned repository.
+
 #### Manual Configuration
-If you prefer to manually configure without using the CLI, add this to your `claude.json`:
+If you prefer to manually configure without using the CLI, add this to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -240,7 +264,7 @@ This is an unofficial integration and is not affiliated with, officially maintai
 ### Common Issues
 
 **"Motion API key not found" error**
-- Make sure you've added the `MOTION_API_KEY` to your claude.json configuration
+- Make sure you've added the `MOTION_API_KEY` to your claude_desktop_config.json configuration
 - Verify the key is correct and hasn't expired
 - Restart Claude Desktop after adding the key
 
