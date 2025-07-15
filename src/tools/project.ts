@@ -6,17 +6,17 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_projects',
-      description: 'List all projects, optionally filtered by workspace',
+      description: 'List all projects in a workspace',
       inputSchema: {
         type: 'object',
         properties: {
-          workspaceId: { type: 'string', description: 'Filter by workspace ID' },
+          workspaceId: { type: 'string', description: 'Workspace ID (required)' },
         },
-        required: [],
+        required: ['workspaceId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
-          workspaceId: z.string().optional(),
+          workspaceId: z.string().min(1),
         });
 
         const validated = schema.parse(args);
@@ -55,8 +55,13 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
         properties: {
           name: { type: 'string', description: 'Project name' },
           workspaceId: { type: 'string', description: 'Workspace ID' },
-          description: { type: 'string', description: 'Project description' },
-          status: { type: 'string', description: 'Initial project status' },
+          description: { type: 'string', description: 'Project description (supports HTML/Markdown)' },
+          status: { type: 'string', description: 'Initial project status (must be valid for workspace)' },
+          customFieldValues: {
+            type: 'object',
+            description: 'Custom field values as key-value pairs',
+            additionalProperties: true,
+          },
         },
         required: ['name', 'workspaceId'],
       },
@@ -66,6 +71,7 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
           workspaceId: z.string().min(1),
           description: z.string().optional(),
           status: z.string().optional(),
+          customFieldValues: z.record(z.any()).optional(),
         });
 
         const validated = schema.parse(args);
@@ -82,6 +88,11 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
           name: { type: 'string', description: 'New project name' },
           description: { type: 'string', description: 'New project description' },
           status: { type: 'string', description: 'New project status' },
+          customFieldValues: {
+            type: 'object',
+            description: 'Custom field values as key-value pairs (only include fields to update)',
+            additionalProperties: true,
+          },
         },
         required: ['projectId'],
       },
@@ -91,6 +102,7 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
           name: z.string().optional(),
           description: z.string().optional(),
           status: z.string().optional(),
+          customFieldValues: z.record(z.any()).optional(),
         });
 
         const { projectId, ...updateParams } = schema.parse(args);
@@ -101,6 +113,8 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
         if (updateParams.description !== undefined)
           filteredParams.description = updateParams.description;
         if (updateParams.status !== undefined) filteredParams.status = updateParams.status;
+        if (updateParams.customFieldValues !== undefined)
+          filteredParams.customFieldValues = updateParams.customFieldValues;
 
         return await client.updateProject(projectId, filteredParams);
       },

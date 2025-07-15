@@ -6,25 +6,28 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_recurring_tasks',
-      description: 'List all recurring tasks, optionally filtered by workspace',
+      description: 'List all recurring tasks for a specific workspace. Supports pagination via cursor.',
       inputSchema: {
         type: 'object',
         properties: {
-          workspaceId: { type: 'string', description: 'Filter by workspace ID' },
+          workspaceId: { type: 'string', description: 'Workspace ID (required)' },
+          cursor: { type: 'string', description: 'Pagination cursor from previous response' },
         },
-        required: [],
+        required: ['workspaceId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
-          workspaceId: z.string().optional(),
+          workspaceId: z.string().min(1),
+          cursor: z.string().optional(),
         });
 
         const validated = schema.parse(args);
-        const recurringTasks = await client.listRecurringTasks(validated.workspaceId);
+        const response = await client.listRecurringTasks(validated);
 
         return {
-          recurringTasks,
-          count: recurringTasks.length,
+          recurringTasks: response.recurringTasks,
+          meta: response.meta,
+          count: response.recurringTasks?.length || 0,
         };
       },
     },
@@ -38,8 +41,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
           workspaceId: { type: 'string', description: 'Workspace ID' },
           frequency: {
             type: 'string',
-            enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'],
-            description: 'Recurrence frequency',
+            description: 'Recurrence frequency (e.g., DAILY, WEEKLY_MONDAY, MONTHLY_1, MONTHLY_LAST)',
           },
           recurrenceRule: { type: 'string', description: 'Custom recurrence rule (optional)' },
           duration: {
@@ -48,20 +50,44 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
           },
           description: { type: 'string', description: 'Task description' },
           projectId: { type: 'string', description: 'Project ID to associate with' },
-          assigneeId: { type: 'string', description: 'User ID to assign to' },
+          assigneeId: { type: 'string', description: 'User ID to assign to (required)' },
+          deadlineType: {
+            type: 'string',
+            enum: ['HARD', 'SOFT'],
+            description: 'Deadline type (default: SOFT)',
+          },
+          startingOn: { type: 'string', description: 'ISO 8601 date when to start generating tasks' },
+          idealTime: { type: 'string', description: 'Preferred time of day (HH:mm format)' },
+          schedule: { type: 'string', description: 'Schedule name (default: "Work Hours")' },
+          priority: {
+            type: 'string',
+            enum: ['HIGH', 'MEDIUM'],
+            description: 'Task priority (default: MEDIUM)',
+          },
+          labels: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of label names',
+          },
         },
-        required: ['name', 'workspaceId', 'frequency'],
+        required: ['name', 'workspaceId', 'frequency', 'assigneeId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           name: z.string().min(1),
           workspaceId: z.string().min(1),
-          frequency: z.enum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']),
+          frequency: z.string().min(1),
           recurrenceRule: z.string().optional(),
           duration: z.union([z.string(), z.number()]).optional(),
           description: z.string().optional(),
           projectId: z.string().optional(),
-          assigneeId: z.string().optional(),
+          assigneeId: z.string().min(1),
+          deadlineType: z.enum(['HARD', 'SOFT']).optional(),
+          startingOn: z.string().optional(),
+          idealTime: z.string().optional(),
+          schedule: z.string().optional(),
+          priority: z.enum(['HIGH', 'MEDIUM']).optional(),
+          labels: z.array(z.string()).optional(),
         });
 
         const validated = schema.parse(args);
@@ -97,8 +123,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
           name: { type: 'string', description: 'New name' },
           frequency: {
             type: 'string',
-            enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'],
-            description: 'New frequency',
+            description: 'New frequency (e.g., DAILY, WEEKLY_MONDAY, MONTHLY_1, MONTHLY_LAST)',
           },
           recurrenceRule: { type: 'string', description: 'New recurrence rule' },
           duration: {
@@ -115,7 +140,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
         const schema = z.object({
           recurringTaskId: z.string().min(1),
           name: z.string().optional(),
-          frequency: z.enum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']).optional(),
+          frequency: z.string().optional(),
           recurrenceRule: z.string().optional(),
           duration: z.union([z.string(), z.number()]).optional(),
           description: z.string().optional(),

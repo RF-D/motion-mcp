@@ -5,8 +5,8 @@ import { Tool } from '../types/tool.js';
 export function registerScheduleTools(client: MotionApiClient): Tool[] {
   return [
     {
-      name: 'motion_get_schedule',
-      description: 'Get schedule information for a user within a date range',
+      name: 'motion_get_scheduled_tasks',
+      description: 'Get scheduled tasks for a user within a date range',
       inputSchema: {
         type: 'object',
         properties: {
@@ -35,6 +35,23 @@ export function registerScheduleTools(client: MotionApiClient): Tool[] {
         return {
           schedules,
           count: schedules.length,
+        };
+      },
+    },
+    {
+      name: 'motion_get_work_schedules',
+      description: 'Get all available work schedules (availability hours) for the current user',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: [],
+      },
+      handler: async () => {
+        const workSchedules = await client.getWorkSchedules();
+
+        return {
+          workSchedules,
+          count: workSchedules.length,
         };
       },
     },

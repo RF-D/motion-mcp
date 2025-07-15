@@ -115,6 +115,11 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
             description: 'Label names to add',
           },
           assigneeId: { type: 'string', description: 'User ID to assign to' },
+          customFieldValues: {
+            type: 'object',
+            description: 'Custom field values as key-value pairs',
+            additionalProperties: true,
+          },
         },
         required: ['name', 'workspaceId'],
       },
@@ -140,6 +145,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
           priority: z.enum(['ASAP', 'HIGH', 'MEDIUM', 'LOW']).optional(),
           labels: z.array(z.string()).optional(),
           assigneeId: z.string().optional(),
+          customFieldValues: z.record(z.any()).optional(),
         });
 
         const validated = schema.parse(args);
@@ -173,6 +179,29 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
             items: { type: 'string' },
             description: 'New labels (replaces existing)',
           },
+          workspaceId: { type: 'string', description: 'Move to different workspace' },
+          projectId: { type: 'string', description: 'Move to different project' },
+          autoScheduled: {
+            type: ['object', 'null'],
+            properties: {
+              startDate: { type: 'string', description: 'ISO 8601 start date' },
+              deadlineType: {
+                type: 'string',
+                enum: ['HARD', 'SOFT', 'NONE'],
+                description: 'Deadline type',
+              },
+              schedule: {
+                type: 'string',
+                description: 'Schedule name',
+              },
+            },
+            description: 'Auto-scheduling configuration (null to disable)',
+          },
+          customFieldValues: {
+            type: 'object',
+            description: 'Custom field values as key-value pairs',
+            additionalProperties: true,
+          },
         },
         required: ['taskId'],
       },
@@ -188,6 +217,19 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
           completed: z.boolean().optional(),
           assigneeId: z.string().optional(),
           labels: z.array(z.string()).optional(),
+          workspaceId: z.string().optional(),
+          projectId: z.string().optional(),
+          autoScheduled: z
+            .union([
+              z.object({
+                startDate: z.string(),
+                deadlineType: z.enum(['HARD', 'SOFT', 'NONE']).optional(),
+                schedule: z.string().optional(),
+              }),
+              z.null(),
+            ])
+            .optional(),
+          customFieldValues: z.record(z.any()).optional(),
         });
 
         const { taskId, ...updateParams } = schema.parse(args);
@@ -216,23 +258,44 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_move_task',
-      description: 'Move a task to a different project',
+      description: 'Move a task to a different workspace and optionally reassign it',
       inputSchema: {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID to move' },
-          projectId: { type: 'string', description: 'Target project ID' },
+          workspaceId: { type: 'string', description: 'Target workspace ID' },
+          assigneeId: { type: 'string', description: 'New assignee ID (optional)' },
         },
-        required: ['taskId', 'projectId'],
+        required: ['taskId', 'workspaceId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           taskId: z.string().min(1),
-          projectId: z.string().min(1),
+          workspaceId: z.string().min(1),
+          assigneeId: z.string().optional(),
+        });
+
+        const { taskId, ...moveParams } = schema.parse(args);
+        return await client.moveTask(taskId, moveParams);
+      },
+    },
+    {
+      name: 'motion_unassign_task',
+      description: 'Remove assignee from a task',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string', description: 'Task ID to unassign' },
+        },
+        required: ['taskId'],
+      },
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          taskId: z.string().min(1),
         });
 
         const validated = schema.parse(args);
-        return await client.moveTask(validated.taskId, validated.projectId);
+        return await client.unassignTask(validated.taskId);
       },
     },
     {

@@ -37,17 +37,17 @@ export function registerUserTools(client: MotionApiClient): Tool[] {
     },
     {
       name: 'motion_list_users',
-      description: 'List all users, optionally filtered by workspace',
+      description: 'List all users in a workspace',
       inputSchema: {
         type: 'object',
         properties: {
-          workspaceId: { type: 'string', description: 'Filter by workspace ID' },
+          workspaceId: { type: 'string', description: 'Workspace ID (required)' },
         },
-        required: [],
+        required: ['workspaceId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
-          workspaceId: z.string().optional(),
+          workspaceId: z.string().min(1),
         });
 
         const validated = schema.parse(args);

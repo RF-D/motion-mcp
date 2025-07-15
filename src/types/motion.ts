@@ -61,10 +61,11 @@ export interface MotionProject {
 export interface MotionWorkspace {
   id: string;
   name: string;
-  teamId: string;
+  teamId: string | null;
   type: 'TEAM' | 'INDIVIDUAL';
   labels: Array<{ name: string }>;
-  statuses: MotionStatus[];
+  taskStatuses: MotionStatus[];
+  users?: MotionUser[];
 }
 
 export interface MotionStatus {
@@ -94,6 +95,21 @@ export interface MotionSchedule {
   tasks: MotionTask[];
 }
 
+export interface MotionWorkSchedule {
+  name: string;
+  isDefaultTimezone: boolean;
+  timezone: string;
+  schedule: {
+    monday: Array<{ start: string; end: string }>;
+    tuesday: Array<{ start: string; end: string }>;
+    wednesday: Array<{ start: string; end: string }>;
+    thursday: Array<{ start: string; end: string }>;
+    friday: Array<{ start: string; end: string }>;
+    saturday: Array<{ start: string; end: string }>;
+    sunday: Array<{ start: string; end: string }>;
+  };
+}
+
 export interface MotionCustomField {
   id: string;
   name: string;
@@ -110,8 +126,16 @@ export interface MotionCustomField {
     | 'phone'
     | 'checkbox'
     | 'relatedTo';
-  options?: string[]; // For select/multiSelect types
   workspaceId: string;
+  metadata?: {
+    format?: 'plain' | 'formatted' | 'percent';
+    options?: Array<{
+      id: string;
+      value: string;
+      color?: string;
+    }>;
+    toggle?: boolean;
+  };
 }
 
 export type MotionCustomFieldValue =
@@ -133,11 +157,22 @@ export interface MotionRecurringTask {
   name: string;
   description?: string;
   duration: string | number;
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  recurrenceRule: string;
+  frequency: string; // e.g., 'DAILY', 'WEEKLY_MONDAY', 'MONTHLY_1', 'MONTHLY_LAST'
+  recurrenceRule?: string;
   workspaceId: string;
   projectId?: string;
   assigneeId?: string;
+  creator?: MotionUser;
+  assignee?: MotionUser;
+  project?: MotionProject;
+  workspace?: MotionWorkspace;
+  status?: MotionStatus;
+  priority?: 'HIGH' | 'MEDIUM';
+  labels?: Array<{ name: string }>;
+  deadlineType?: 'HARD' | 'SOFT';
+  startingOn?: string;
+  idealTime?: string;
+  schedule?: string;
 }
 
 export interface MotionListResponse<T> {
@@ -164,6 +199,7 @@ export interface MotionTaskCreateParams {
   priority?: 'ASAP' | 'HIGH' | 'MEDIUM' | 'LOW';
   labels?: string[];
   assigneeId?: string;
+  customFieldValues?: Record<string, MotionCustomFieldValue>;
 }
 
 export interface MotionTaskUpdateParams {
@@ -176,6 +212,14 @@ export interface MotionTaskUpdateParams {
   completed?: boolean;
   assigneeId?: string;
   labels?: string[];
+  workspaceId?: string;
+  autoScheduled?: {
+    startDate: string;
+    deadlineType?: 'HARD' | 'SOFT' | 'NONE';
+    schedule?: string;
+  } | null;
+  projectId?: string;
+  customFieldValues?: Record<string, MotionCustomFieldValue>;
 }
 
 export interface MotionProjectCreateParams {
@@ -183,6 +227,7 @@ export interface MotionProjectCreateParams {
   workspaceId: string;
   description?: string;
   status?: string;
+  customFieldValues?: Record<string, MotionCustomFieldValue>;
 }
 
 export interface MotionCommentCreateParams {
