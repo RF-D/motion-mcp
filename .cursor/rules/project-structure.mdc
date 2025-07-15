@@ -1,0 +1,32 @@
+# Motion MCP Project Structure
+
+This is a **Motion MCP (Model Context Protocol) Server** that provides AI assistants with access to Motion's task management API.
+
+## Core Architecture
+
+- **Entry Point**: [src/index.ts](mdc:src/index.ts) - Main server setup and tool registration
+- **Configuration**: [src/config.ts](mdc:src/config.ts) - Environment-based configuration loading
+- **API Client**: [src/api/client.ts](mdc:src/api/client.ts) - HTTP client with rate limiting and error handling
+- **Types**: [src/types/](mdc:src/types/) - TypeScript interfaces for Motion API and MCP tools
+- **Tools**: [src/tools/](mdc:src/tools/) - Individual MCP tool implementations
+
+## Key Files
+
+- [src/types/motion.ts](mdc:src/types/motion.ts) - Motion API data structures
+- [src/types/tool.ts](mdc:src/types/tool.ts) - MCP tool interface definition
+- [package.json](mdc:package.json) - Dependencies and project configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+
+## Tool Organization
+
+Each tool file in `src/tools/` exports a `register*Tools()` function that returns an array of `Tool` objects. All tools are registered in the main server in [src/index.ts](mdc:src/index.ts).
+
+## Dependencies
+
+- `@modelcontextprotocol/sdk` - MCP protocol implementation
+- `axios` - HTTP client for Motion API
+- `p-queue` - Rate limiting
+- `zod` - Runtime validation
+- `dotenv` - Environment variable management
+alwaysApply: true
+---

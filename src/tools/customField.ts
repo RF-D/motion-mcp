@@ -6,17 +6,17 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_custom_fields',
-      description: 'List all custom fields, optionally filtered by workspace',
+      description: 'List all custom fields for a workspace',
       inputSchema: {
         type: 'object',
         properties: {
-          workspaceId: { type: 'string', description: 'Filter by workspace ID' },
+          workspaceId: { type: 'string', description: 'Workspace ID (required)' },
         },
-        required: [],
+        required: ['workspaceId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
-          workspaceId: z.string().optional(),
+          workspaceId: z.string().min(1),
         });
 
         const validated = schema.parse(args);
@@ -54,10 +54,9 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
             description: 'Custom field type',
           },
           workspaceId: { type: 'string', description: 'Workspace ID' },
-          options: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Options for select/multiSelect fields',
+          metadata: {
+            type: 'object',
+            description: 'Metadata for the field (e.g., options for select fields)',
           },
         },
         required: ['name', 'type', 'workspaceId'],
@@ -80,11 +79,33 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
             'relatedTo',
           ]),
           workspaceId: z.string().min(1),
-          options: z.array(z.string()).optional(),
+          metadata: z.object({}).passthrough().optional(),
         });
 
         const validated = schema.parse(args);
         return await client.createCustomField(validated);
+      },
+    },
+    {
+      name: 'motion_delete_custom_field',
+      description: 'Delete a custom field',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          workspaceId: { type: 'string', description: 'Workspace ID' },
+          customFieldId: { type: 'string', description: 'Custom field ID' },
+        },
+        required: ['workspaceId', 'customFieldId'],
+      },
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          workspaceId: z.string().min(1),
+          customFieldId: z.string().min(1),
+        });
+
+        const validated = schema.parse(args);
+        await client.deleteCustomField(validated.workspaceId, validated.customFieldId);
+        return { success: true, message: 'Custom field deleted successfully' };
       },
     },
     {
@@ -94,22 +115,22 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID' },
-          customFieldId: { type: 'string', description: 'Custom field ID' },
+          customFieldInstanceId: { type: 'string', description: 'Custom field instance ID' },
           value: { description: 'Custom field value (type depends on field type)' },
         },
-        required: ['taskId', 'customFieldId', 'value'],
+        required: ['taskId', 'customFieldInstanceId', 'value'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           taskId: z.string().min(1),
-          customFieldId: z.string().min(1),
+          customFieldInstanceId: z.string().min(1),
           value: z.any(),
         });
 
         const validated = schema.parse(args);
         await client.addCustomFieldToTask(
           validated.taskId,
-          validated.customFieldId,
+          validated.customFieldInstanceId,
           validated.value
         );
         return { success: true, message: 'Custom field added to task successfully' };
@@ -122,22 +143,22 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
         type: 'object',
         properties: {
           projectId: { type: 'string', description: 'Project ID' },
-          customFieldId: { type: 'string', description: 'Custom field ID' },
+          customFieldInstanceId: { type: 'string', description: 'Custom field instance ID' },
           value: { description: 'Custom field value (type depends on field type)' },
         },
-        required: ['projectId', 'customFieldId', 'value'],
+        required: ['projectId', 'customFieldInstanceId', 'value'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           projectId: z.string().min(1),
-          customFieldId: z.string().min(1),
+          customFieldInstanceId: z.string().min(1),
           value: z.any(),
         });
 
         const validated = schema.parse(args);
         await client.addCustomFieldToProject(
           validated.projectId,
-          validated.customFieldId,
+          validated.customFieldInstanceId,
           validated.value
         );
         return { success: true, message: 'Custom field added to project successfully' };
@@ -150,19 +171,41 @@ export function registerCustomFieldTools(client: MotionApiClient): Tool[] {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID' },
-          customFieldId: { type: 'string', description: 'Custom field ID' },
+          valueId: { type: 'string', description: 'Custom field value ID to remove' },
         },
-        required: ['taskId', 'customFieldId'],
+        required: ['taskId', 'valueId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           taskId: z.string().min(1),
-          customFieldId: z.string().min(1),
+          valueId: z.string().min(1),
         });
 
         const validated = schema.parse(args);
-        await client.removeCustomFieldFromTask(validated.taskId, validated.customFieldId);
+        await client.removeCustomFieldFromTask(validated.taskId, validated.valueId);
         return { success: true, message: 'Custom field removed from task successfully' };
+      },
+    },
+    {
+      name: 'motion_remove_custom_field_from_project',
+      description: 'Remove a custom field value from a project',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          projectId: { type: 'string', description: 'Project ID' },
+          valueId: { type: 'string', description: 'Custom field value ID to remove' },
+        },
+        required: ['projectId', 'valueId'],
+      },
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          projectId: z.string().min(1),
+          valueId: z.string().min(1),
+        });
+
+        const validated = schema.parse(args);
+        await client.removeCustomFieldFromProject(validated.projectId, validated.valueId);
+        return { success: true, message: 'Custom field removed from project successfully' };
       },
     },
   ];

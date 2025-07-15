@@ -17,6 +17,7 @@ import { registerScheduleTools } from './tools/schedule.js';
 import { registerCommentTools } from './tools/comment.js';
 import { registerCustomFieldTools } from './tools/customField.js';
 import { registerRecurringTaskTools } from './tools/recurringTask.js';
+import { registerStatusTools } from './tools/status.js';
 
 async function main() {
   const config = getConfig();
@@ -44,6 +45,7 @@ async function main() {
     ...registerCommentTools(apiClient),
     ...registerCustomFieldTools(apiClient),
     ...registerRecurringTaskTools(apiClient),
+    ...registerStatusTools(apiClient),
   ];
 
   // Handle list tools request

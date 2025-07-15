@@ -6,25 +6,28 @@ export function registerCommentTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_comments',
-      description: 'List all comments for a specific task',
+      description: 'List all comments for a specific task. Supports pagination via cursor.',
       inputSchema: {
         type: 'object',
         properties: {
           taskId: { type: 'string', description: 'Task ID to get comments for' },
+          cursor: { type: 'string', description: 'Pagination cursor from previous response' },
         },
         required: ['taskId'],
       },
       handler: async (args: unknown) => {
         const schema = z.object({
           taskId: z.string().min(1),
+          cursor: z.string().optional(),
         });
 
         const validated = schema.parse(args);
-        const comments = await client.listComments(validated.taskId);
+        const response = await client.listComments(validated.taskId, validated.cursor);
 
         return {
-          comments,
-          count: comments.length,
+          comments: response.comments,
+          meta: response.meta,
+          count: response.comments?.length || 0,
         };
       },
     },

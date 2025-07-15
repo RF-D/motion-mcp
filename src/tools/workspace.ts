@@ -6,17 +6,33 @@ export function registerWorkspaceTools(client: MotionApiClient): Tool[] {
   return [
     {
       name: 'motion_list_workspaces',
-      description: 'List all workspaces accessible to the authenticated user',
+      description:
+        'List all workspaces accessible to the authenticated user. Supports pagination and filtering by IDs.',
       inputSchema: {
         type: 'object',
-        properties: {},
+        properties: {
+          cursor: { type: 'string', description: 'Pagination cursor from previous response' },
+          ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of workspace IDs to get expanded details',
+          },
+        },
         required: [],
       },
-      handler: async () => {
-        const workspaces = await client.listWorkspaces();
+      handler: async (args: unknown) => {
+        const schema = z.object({
+          cursor: z.string().optional(),
+          ids: z.array(z.string()).optional(),
+        });
+
+        const validated = schema.parse(args);
+        const response = await client.listWorkspaces(validated);
+
         return {
-          workspaces,
-          count: workspaces.length,
+          workspaces: response.workspaces,
+          meta: response.meta,
+          count: response.workspaces?.length || 0,
         };
       },
     },

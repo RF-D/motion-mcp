@@ -1,0 +1,124 @@
+# Data Validation Patterns
+
+## Zod Schema Patterns
+
+All tool handlers use **Zod schemas** for runtime validation following these patterns:
+
+### Basic Types
+
+```typescript
+const schema = z.object({
+  id: z.string().min(1),                    // Required string
+  name: z.string().optional(),              // Optional string
+  count: z.number().min(0),                 // Number with constraint
+  enabled: z.boolean(),                     // Boolean
+  items: z.array(z.string()),               // Array of strings
+});
+```
+
+### Motion-Specific Patterns
+
+```typescript
+// Task priorities
+priority: z.enum(['ASAP', 'HIGH', 'MEDIUM', 'LOW']).optional()
+
+// Deadline types
+deadlineType: z.enum(['HARD', 'SOFT', 'NONE']).optional()
+
+// Duration (string or number)
+duration: z.union([z.string(), z.number()]).optional()
+
+// ISO date strings
+dueDate: z.string().optional()
+
+// Array of status strings
+status: z.array(z.string()).optional()
+```
+
+### Complex Objects
+
+```typescript
+// Auto-scheduling configuration
+autoScheduled: z.union([
+  z.object({
+    startDate: z.string(),
+    deadlineType: z.enum(['HARD', 'SOFT', 'NONE']).optional(),
+    schedule: z.string().optional(),
+  }),
+  z.null(),
+]).optional()
+```
+
+## Validation Workflow
+
+1. **Define schema** at the top of handler function
+2. **Parse input** with `schema.parse(args)`
+3. **Use validated data** with full TypeScript support
+4. **Let errors bubble** up to MCP error handler
+
+```typescript
+handler: async (args: unknown) => {
+  const schema = z.object({
+    taskId: z.string().min(1),
+    name: z.string().optional(),
+  });
+
+  const validated = schema.parse(args);
+  return await client.updateTask(validated.taskId, validated);
+}
+```
+
+## Common Validation Patterns
+
+### ID Validation
+```typescript
+taskId: z.string().min(1)              // Non-empty string
+workspaceId: z.string().min(1)         // Non-empty string
+```
+
+### Optional Parameters
+```typescript
+cursor: z.string().optional()          // Pagination cursor
+includeAllStatuses: z.boolean().optional() // Filter flag
+```
+
+### Filter Arrays
+```typescript
+labels: z.array(z.string()).optional() // Array of label names
+assignees: z.array(z.string()).optional() // Array of user IDs
+```
+
+## Schema Reuse
+
+For complex schemas, consider extracting to constants:
+
+```typescript
+const CreateTaskSchema = z.object({
+  name: z.string().min(1),
+  workspaceId: z.string().min(1),
+  // ... other fields
+});
+
+const UpdateTaskSchema = CreateTaskSchema.partial().extend({
+  taskId: z.string().min(1),
+});
+```
+
+## Motion Type Integration
+
+Validation schemas should align with Motion types from [src/types/motion.ts](mdc:src/types/motion.ts):
+
+- Use **same field names** as Motion interfaces
+- Apply **same constraints** as API requirements
+- Support **same optional/required** patterns
+
+## Error Messages
+
+Zod provides detailed error messages automatically. For custom validation:
+
+```typescript
+z.string().min(1, "Task name cannot be empty")
+z.number().min(0, "Duration must be positive")
+```
+description: Data validation patterns using Zod
+---

@@ -1,0 +1,81 @@
+# Error Handling Patterns
+
+## MCP Error Types
+
+Use `McpError` from `@modelcontextprotocol/sdk/types.js` for MCP-specific errors:
+
+```typescript
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+
+// Tool not found
+throw new McpError(ErrorCode.MethodNotFound, `Tool ${toolName} not found`);
+
+// Tool execution failed
+throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${error.message}`);
+```
+
+## API Client Error Handling
+
+The API client in [src/api/client.ts](mdc:src/api/client.ts) handles common HTTP errors:
+
+- **429 (Rate Limited)**: "Rate limit exceeded. Please try again later."
+- **401 (Unauthorized)**: "Authentication failed. Check your API key."
+- **404 (Not Found)**: "Resource not found."
+- **Other errors**: Generic API error with status code
+
+## Validation Error Handling
+
+Use Zod for input validation in tool handlers:
+
+```typescript
+try {
+  const validated = schema.parse(args);
+  // ... use validated data
+} catch (error) {
+  // Zod errors will be caught by MCP error handler
+  throw error;
+}
+```
+
+## Configuration Error Handling
+
+Configuration errors are thrown immediately in [src/config.ts](mdc:src/config.ts):
+
+```typescript
+if (!apiKey) {
+  throw new Error('MOTION_API_KEY environment variable is required');
+}
+```
+
+## Server Error Handling
+
+The main server in [src/index.ts](mdc:src/index.ts) has global error handling:
+
+```typescript
+main().catch((error) => {
+  console.error('Fatal error starting Motion MCP server:', error);
+  process.exit(1);
+});
+```
+
+## Error Response Format
+
+Tool handlers should return structured error information when possible:
+
+```typescript
+return {
+  success: false,
+  error: 'Specific error message',
+  details: additionalContext
+};
+```
+
+## Best Practices
+
+1. **Be specific**: Include relevant context in error messages
+2. **Don't expose internals**: Sanitize error messages for user consumption
+3. **Log appropriately**: Use `console.error` for debugging information
+4. **Fail fast**: Validate inputs early and throw meaningful errors
+5. **Chain errors**: Preserve original error context when re-throwing
+description: Error handling patterns and conventions
+---

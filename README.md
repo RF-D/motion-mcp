@@ -8,6 +8,15 @@
 [![MCP Version](https://img.shields.io/badge/MCP-1.0.4-blue)](https://modelcontextprotocol.io)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-green)](https://nodejs.org)
 
+## Claude Desktop vs Claude Code
+
+**Important**: There are two different Claude applications that can use this MCP server:
+
+- **🖥️ Claude Desktop**: The desktop application you download and install on your computer
+- **⌨️ Claude Code**: A command-line interface (CLI) tool for developers
+
+Each has different installation procedures - make sure you follow the correct instructions for your application!
+
 ## Quick Start
 
 ### Step 1: Get Your Motion API Key
@@ -17,24 +26,27 @@
 3. Create a new API key
 4. Copy the key immediately (it's only shown once!)
 
-### Step 2: Install the MCP Server
+### Step 2: Choose Your Claude Application
 
-Run this command to add the Motion MCP server to Claude:
+**Important**: This MCP server works with both Claude applications, but they have different installation methods:
 
-```bash
-claude mcp add motion npx -- -y @rf-d/motion-mcp
-```
+- **Claude Desktop** (Desktop App): Requires manual JSON configuration
+- **Claude Code** (CLI Tool): Has built-in MCP installation commands
 
-### Step 3: Add Your API Key
+Choose the installation method below based on which Claude application you're using.
 
-The above command creates the configuration, but you need to manually add your API key:
+---
 
-1. Open your Claude configuration file:
-   - **macOS**: `~/Library/Application Support/Claude/claude.json`
-   - **Windows**: `%APPDATA%\Claude\claude.json`
-   - **Linux**: `~/.config/claude/claude.json`
+## Installation for Claude Desktop (Desktop App)
 
-2. Find the `motion` entry that was just added and update it to include your API key:
+### Manual Configuration
+
+1. Find your Claude Desktop configuration file:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux**: `~/.config/claude/claude_desktop_config.json`
+
+2. Add the following to your configuration file:
 
 ```json
 {
@@ -43,20 +55,61 @@ The above command creates the configuration, but you need to manually add your A
       "command": "npx",
       "args": ["-y", "@rf-d/motion-mcp"],
       "env": {
-        "MOTION_API_KEY": "your_motion_api_key_here"
+        "MOTION_API_KEY": "your_motion_api_key_here",
+        "MOTION_RATE_LIMIT_PER_MINUTE": "12"
       }
     }
   }
 }
 ```
 
-3. Save the file and restart Claude Desktop
+3. Replace `your_motion_api_key_here` with your actual Motion API key
+4. Restart Claude Desktop for the changes to take effect
 
-### Alternative Installation Methods
+---
 
-#### Via GitHub (Development)
+## Installation for Claude Code (CLI Tool)
+
+### Step 1: Install Claude Code CLI
+
+First, install the Claude Code CLI if you haven't already:
+
 ```bash
-git clone https://github.com/RF-D/motion-mcp.git
+npm install -g @anthropic-ai/claude-code
+```
+
+### Step 2: Add Motion MCP Server
+
+Run this command to add the Motion MCP server to Claude Code:
+
+```bash
+claude mcp add motion npx -- -y @rf-d/motion-mcp
+```
+
+### Step 3: Configure Your API Key
+
+Set your Motion API key as an environment variable:
+
+```bash
+export MOTION_API_KEY="your_motion_api_key_here"
+```
+
+Or create a `.env` file in your project directory:
+
+```bash
+echo "MOTION_API_KEY=your_motion_api_key_here" > .env
+```
+
+---
+
+## Alternative Installation Methods
+
+### Via GitHub (Development)
+
+For development installation, we recommend using [mjaskolski's fork](https://github.com/mjaskolski/motion-mcp) which is up-to-date, has fewer errors, full documentation, and comprehensive tests:
+
+```bash
+git clone https://github.com/mjaskolski/motion-mcp.git
 cd motion-mcp
 npm install
 npm run build
@@ -68,30 +121,42 @@ echo "MOTION_API_KEY=your_motion_api_key_here" > .env
 npm run dev
 ```
 
-#### Manual Configuration
-If you prefer to manually configure without using the CLI, add this to your `claude.json`:
+**For Claude Desktop (development version):**
 
 ```json
 {
   "mcpServers": {
     "motion": {
-      "command": "npx",
-      "args": ["-y", "@rf-d/motion-mcp"],
+      "command": "npm",
+      "args": [
+        "--prefix",
+        "/path/to/your/motion-mcp",
+        "--silent",
+        "run",
+        "start"
+      ],
       "env": {
-        "MOTION_API_KEY": "your_motion_api_key_here",
-        "MOTION_RATE_LIMIT_PER_MINUTE": "12"  // 12 for individual, 120 for teams
+        "MOTION_API_KEY": "YOUR_API_KEY"
       }
     }
   }
 }
 ```
 
+**For Claude Code (development version):**
+
+```bash
+claude mcp add motion-dev npm -- --prefix /path/to/your/motion-mcp --silent run start
+```
+
+Replace `/path/to/your/motion-mcp` with the actual path to your cloned repository.
+
 ## Features
 
 ### Core Capabilities
 
 - **Task Management**: Create, update, delete, and organize tasks with full support for Motion's auto-scheduling
-- **Project Management**: Manage projects across workspaces with custom statuses
+- **Project Management**: Create and view projects across workspaces (Note: Projects are read-only once created)
 - **Workspace Organization**: Access and manage multiple workspaces
 - **Team Collaboration**: User management, task assignment, and team coordination
 - **Comments**: Add and manage task comments for better collaboration
@@ -108,33 +173,32 @@ The server includes automatic rate limiting to comply with Motion's API limits:
 
 ## Available Tools
 
-### Task Management (8 tools)
+### Task Management (7 tools)
 - `motion_list_tasks` - List tasks with filtering and pagination
 - `motion_get_task` - Get detailed task information
 - `motion_create_task` - Create new tasks with auto-scheduling
 - `motion_update_task` - Update task properties
 - `motion_delete_task` - Delete tasks
-- `motion_move_task` - Move tasks between projects
-- `motion_complete_task` - Mark tasks as completed
-- `motion_uncomplete_task` - Mark tasks as not completed
+- `motion_move_task` - Move tasks between workspaces
+- `motion_unassign_task` - Remove assignee from task
 
-### Project Management (5 tools)
+### Project Management (3 tools)
 - `motion_list_projects` - List all projects
 - `motion_get_project` - Get project details
 - `motion_create_project` - Create new projects
-- `motion_update_project` - Update project information
-- `motion_delete_project` - Delete projects
 
 ### Workspace Tools (2 tools)
 - `motion_list_workspaces` - List accessible workspaces
 - `motion_get_workspace` - Get workspace details
 
-### Additional Tools (17 tools)
+### Additional Tools (22 tools)
 - User management (3 tools)
 - Schedule management (1 tool)
 - Comment management (5 tools)
 - Custom field management (5 tools)
-- Recurring task management (5 tools)
+- Recurring task management (4 tools)
+- Schedule management (2 tools)
+- Status management (1 tool)
 
 ## Usage Examples
 
@@ -242,9 +306,10 @@ This is an unofficial integration and is not affiliated with, officially maintai
 ### Common Issues
 
 **"Motion API key not found" error**
-- Make sure you've added the `MOTION_API_KEY` to your claude.json configuration
+- **Claude Desktop**: Make sure you've added the `MOTION_API_KEY` to your `claude_desktop_config.json` configuration
+- **Claude Code**: Ensure your API key is set as an environment variable or in a `.env` file
 - Verify the key is correct and hasn't expired
-- Restart Claude Desktop after adding the key
+- Restart the application after adding the key
 
 **"Rate limit exceeded" error**
 - Individual accounts are limited to 12 requests per minute
@@ -253,13 +318,29 @@ This is an unofficial integration and is not affiliated with, officially maintai
 
 **"Command not found" error**
 - Make sure you have Node.js >= 20.0.0 installed
-- Try running with the full path: `npx @rf-d/motion-mcp`
+- **Claude Desktop**: Try running with the full path: `npx @rf-d/motion-mcp`
+- **Claude Code**: Ensure the Claude Code CLI is installed: `npm install -g @anthropic-ai/claude-code`
+
+**Claude Desktop configuration file not found**
+- The configuration file is created automatically when you first run Claude Desktop
+- If it doesn't exist, create it manually at the correct location for your operating system
+- Ensure the JSON syntax is valid (no trailing commas, proper brackets)
+
+**Claude Code MCP server not loading**
+- Run `claude mcp list` to see if the server is properly registered
+- Check that your API key environment variable is set correctly
+- Try removing and re-adding the server: `claude mcp remove motion && claude mcp add motion npx -- -y @rf-d/motion-mcp`
 
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/RF-D/motion-mcp/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/RF-D/motion-mcp/discussions)
 - **NPM Package**: [npmjs.com/package/@rf-d/motion-mcp](https://www.npmjs.com/package/@rf-d/motion-mcp)
+
+### Need Help Identifying Your Claude Application?
+
+- **Claude Desktop**: If you downloaded and installed a desktop app from [claude.ai](https://claude.ai)
+- **Claude Code**: If you installed it with `npm install -g @anthropic-ai/claude-code` and run it with the `claude` command
 
 ---
 
