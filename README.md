@@ -39,17 +39,7 @@ Choose the installation method below based on which Claude application you're us
 
 ## Installation for Claude Desktop (Desktop App)
 
-### Step 1: Install via NPX (Recommended)
-
-Run this command to add the Motion MCP server to Claude Desktop:
-
-```bash
-npx @rf-d/motion-mcp --setup-claude-desktop
-```
-
-If the above command doesn't work, follow the manual installation steps below.
-
-### Step 2: Manual Installation
+### Manual Configuration
 
 1. Find your Claude Desktop configuration file:
    - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
