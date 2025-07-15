@@ -78,66 +78,7 @@ export function registerProjectTools(client: MotionApiClient): Tool[] {
         return await client.createProject(validated);
       },
     },
-    {
-      name: 'motion_update_project',
-      description: 'Update an existing project',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          projectId: { type: 'string', description: 'Project ID to update' },
-          name: { type: 'string', description: 'New project name' },
-          description: { type: 'string', description: 'New project description' },
-          status: { type: 'string', description: 'New project status' },
-          customFieldValues: {
-            type: 'object',
-            description: 'Custom field values as key-value pairs (only include fields to update)',
-            additionalProperties: true,
-          },
-        },
-        required: ['projectId'],
-      },
-      handler: async (args: unknown) => {
-        const schema = z.object({
-          projectId: z.string().min(1),
-          name: z.string().optional(),
-          description: z.string().optional(),
-          status: z.string().optional(),
-          customFieldValues: z.record(z.any()).optional(),
-        });
-
-        const { projectId, ...updateParams } = schema.parse(args);
-
-        // Only include non-undefined fields
-        const filteredParams: any = {};
-        if (updateParams.name !== undefined) filteredParams.name = updateParams.name;
-        if (updateParams.description !== undefined)
-          filteredParams.description = updateParams.description;
-        if (updateParams.status !== undefined) filteredParams.status = updateParams.status;
-        if (updateParams.customFieldValues !== undefined)
-          filteredParams.customFieldValues = updateParams.customFieldValues;
-
-        return await client.updateProject(projectId, filteredParams);
-      },
-    },
-    {
-      name: 'motion_delete_project',
-      description: 'Delete a project permanently',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          projectId: { type: 'string', description: 'Project ID to delete' },
-        },
-        required: ['projectId'],
-      },
-      handler: async (args: unknown) => {
-        const schema = z.object({
-          projectId: z.string().min(1),
-        });
-
-        const validated = schema.parse(args);
-        await client.deleteProject(validated.projectId);
-        return { success: true, message: `Project ${validated.projectId} deleted successfully` };
-      },
-    },
+    // Note: Motion API doesn't support project updates or deletion
+    // Projects are read-only once created
   ];
 }

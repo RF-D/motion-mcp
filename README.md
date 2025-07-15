@@ -91,7 +91,7 @@ If you prefer to manually configure without using the CLI, add this to your `cla
 ### Core Capabilities
 
 - **Task Management**: Create, update, delete, and organize tasks with full support for Motion's auto-scheduling
-- **Project Management**: Manage projects across workspaces with custom statuses
+- **Project Management**: Create and view projects across workspaces (Note: Projects are read-only once created)
 - **Workspace Organization**: Access and manage multiple workspaces
 - **Team Collaboration**: User management, task assignment, and team coordination
 - **Comments**: Add and manage task comments for better collaboration
@@ -118,18 +118,16 @@ The server includes automatic rate limiting to comply with Motion's API limits:
 - `motion_complete_task` - Mark tasks as completed
 - `motion_uncomplete_task` - Mark tasks as not completed
 
-### Project Management (5 tools)
+### Project Management (3 tools)
 - `motion_list_projects` - List all projects
 - `motion_get_project` - Get project details
 - `motion_create_project` - Create new projects
-- `motion_update_project` - Update project information
-- `motion_delete_project` - Delete projects
 
 ### Workspace Tools (2 tools)
 - `motion_list_workspaces` - List accessible workspaces
 - `motion_get_workspace` - Get workspace details
 
-### Additional Tools (17 tools)
+### Additional Tools (19 tools)
 - User management (3 tools)
 - Schedule management (1 tool)
 - Comment management (5 tools)

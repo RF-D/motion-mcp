@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is an MCP (Model Context Protocol) server for Motion (usemotion.com) that enables AI assistants to interact with Motion's API. The server implements 32 tools across 8 categories for comprehensive task, project, and calendar management.
+This is an MCP (Model Context Protocol) server for Motion (usemotion.com) that enables AI assistants to interact with Motion's API. The server implements 30 tools across 8 categories for comprehensive task, project, and calendar management.
 
 ## Key Commands
 

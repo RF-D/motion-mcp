@@ -203,16 +203,10 @@ export class MotionApiClient {
     return this.request<MotionProject>('POST', '/projects', params);
   }
 
-  async updateProject(
-    projectId: string,
-    params: Partial<MotionProjectCreateParams>
-  ): Promise<MotionProject> {
-    return this.request<MotionProject>('PATCH', `/projects/${projectId}`, params);
-  }
-
-  async deleteProject(projectId: string): Promise<void> {
-    return this.request<void>('DELETE', `/projects/${projectId}`);
-  }
+  // Note: Motion API doesn't support project deletion
+  // async deleteProject(projectId: string): Promise<void> {
+  //   return this.request<void>('DELETE', `/projects/${projectId}`);
+  // }
 
   // User methods
   async getCurrentUser(): Promise<MotionUser> {

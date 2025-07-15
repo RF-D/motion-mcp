@@ -17,14 +17,12 @@ test('Project Tools', async (t) => {
     }
   });
   
-  await t.test('should register 5 project tools', () => {
-    assert.strictEqual(tools.length, 5);
+  await t.test('should register 3 project tools', () => {
+    assert.strictEqual(tools.length, 3);
     const expectedTools = [
       'motion_list_projects',
       'motion_get_project',
-      'motion_create_project',
-      'motion_update_project',
-      'motion_delete_project'
+      'motion_create_project'
     ];
     expectedTools.forEach((name, index) => {
       assert.strictEqual(tools[index].name, name);
@@ -116,68 +114,14 @@ test('Project Tools', async (t) => {
     });
   });
   
-  await t.test('motion_update_project', async (t) => {
-    const updateTool = tools[3];
-    
-    await createTestContext('should update project properties', async () => {
-      assert(testProjectId, 'Test project should be created first');
-      
-      const newName = `${testPrefix}-updated-project`;
-      const newDescription = 'Updated by automated tests';
-      
-      const result = await testTool(updateTool, {
-        projectId: testProjectId,
-        name: newName,
-        description: newDescription
-      }, (res) => {
-        assertHasProperty(res, 'id');
-        assert.strictEqual(res.name, newName);
-        assert.strictEqual(res.description, newDescription);
-      });
-      
-      await waitForApiLimit();
-    });
-    
-    await createTestContext('should validate required projectId', async () => {
-      await assert.rejects(
-        async () => await updateTool.handler({}),
-        {
-          name: 'ZodError'
-        }
-      );
-    });
-  });
-  
-  await t.test('motion_delete_project', async (t) => {
-    const deleteTool = tools[4];
-    
-    await createTestContext('should delete project', async () => {
-      assert(testProjectId, 'Test project should be created first');
-      
-      const result = await testTool(deleteTool, { projectId: testProjectId }, (res) => {
-        assertHasProperty(res, 'success');
-        assertHasProperty(res, 'message');
-        assert.strictEqual(res.success, true);
-      });
-      
-      await waitForApiLimit();
-    });
-    
-    await createTestContext('should validate required projectId', async () => {
-      await assert.rejects(
-        async () => await deleteTool.handler({}),
-        {
-          name: 'ZodError'
-        }
-      );
-    });
-  });
+  // Note: Motion API doesn't support project deletion
+  // Projects are read-only once created
   
   await t.after(async () => {
     // Clean up all created projects at the end
     for (const projectId of createdProjectIds) {
       try {
-        await testClient.deleteProject(projectId);
+        // Projects cannot be deleted via API
         await waitForApiLimit(2000);
       } catch (error) {
         // Project might already be deleted
