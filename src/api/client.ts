@@ -97,9 +97,7 @@ export class MotionApiClient {
                 ? this.retryDelay * 2 // Double delay for rate limits
                 : this.retryDelay * (attempt + 1); // Exponential backoff
 
-            console.log(
-              `Retrying request to ${path} after ${delay}ms (attempt ${attempt + 1}/${this.maxRetries})`
-            );
+            // Silent retry - no console output to avoid corrupting MCP protocol
             await new Promise((resolve) => setTimeout(resolve, delay));
           }
         }
