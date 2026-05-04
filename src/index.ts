@@ -17,6 +17,7 @@ import { registerScheduleTools } from './tools/schedule.js';
 import { registerCommentTools } from './tools/comment.js';
 import { registerCustomFieldTools } from './tools/customField.js';
 import { registerRecurringTaskTools } from './tools/recurringTask.js';
+import { registerBrandoTools } from './tools/brando.js';
 
 async function main() {
   const config = getConfig();
@@ -24,7 +25,7 @@ async function main() {
 
   const server = new Server(
     {
-      name: 'motion-mcp-server',
+      name: 'brando-motion-mcp',
       version: '0.1.0',
     },
     {
@@ -44,6 +45,7 @@ async function main() {
     ...registerCommentTools(apiClient),
     ...registerCustomFieldTools(apiClient),
     ...registerRecurringTaskTools(apiClient),
+    ...registerBrandoTools(apiClient),
   ];
 
   // Handle list tools request

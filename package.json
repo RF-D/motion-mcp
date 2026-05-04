@@ -1,10 +1,11 @@
 {
-  "name": "@rf-d/motion-mcp",
+  "name": "@brando-as/motion-mcp",
   "version": "0.1.0",
-  "description": "Unofficial MCP server for Motion (usemotion.com) - AI-powered calendar & task management. Integrate Motion with Claude and other AI assistants",
+  "description": "Brando-AS fork of motion-mcp: Motion (usemotion.com) MCP server with Brando-specific conventions (team aliases, Linear cross-linking, project name resolution).",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
+    "brando-motion-mcp": "dist/index.js",
     "motion-mcp": "dist/index.js"
   },
   "files": [
@@ -15,11 +16,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RF-D/motion-mcp.git"
+    "url": "git+https://github.com/Brando-AS/motion-mcp.git"
   },
-  "homepage": "https://github.com/RF-D/motion-mcp#readme",
+  "homepage": "https://github.com/Brando-AS/motion-mcp#readme",
   "bugs": {
-    "url": "https://github.com/RF-D/motion-mcp/issues"
+    "url": "https://github.com/Brando-AS/motion-mcp/issues"
   },
   "scripts": {
     "build": "tsc",
@@ -42,7 +43,7 @@
     "ai-assistant",
     "automation"
   ],
-  "author": "Raul Diaz",
+  "author": "Raul Diaz (upstream); Brando-AS (fork)",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
