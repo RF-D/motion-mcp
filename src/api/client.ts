@@ -74,7 +74,13 @@ export class MotionApiClient {
 
   // Workspace methods
   async listWorkspaces(): Promise<MotionWorkspace[]> {
-    return this.request<MotionWorkspace[]>('GET', '/workspaces');
+    // Motion API wraps the array in `{ workspaces: [...] }` — unwrap defensively
+    // so older code paths that expect an array keep working.
+    const res = await this.request<MotionWorkspace[] | { workspaces: MotionWorkspace[] }>(
+      'GET',
+      '/workspaces'
+    );
+    return Array.isArray(res) ? res : (res?.workspaces ?? []);
   }
 
   async getWorkspace(workspaceId: string): Promise<MotionWorkspace> {
@@ -127,7 +133,13 @@ export class MotionApiClient {
   // Project methods
   async listProjects(workspaceId?: string): Promise<MotionProject[]> {
     const params = workspaceId ? { workspaceId } : undefined;
-    return this.request<MotionProject[]>('GET', '/projects', undefined, params);
+    const res = await this.request<MotionProject[] | { projects: MotionProject[] }>(
+      'GET',
+      '/projects',
+      undefined,
+      params
+    );
+    return Array.isArray(res) ? res : (res?.projects ?? []);
   }
 
   async getProject(projectId: string): Promise<MotionProject> {
@@ -160,7 +172,13 @@ export class MotionApiClient {
 
   async listUsers(workspaceId?: string): Promise<MotionUser[]> {
     const params = workspaceId ? { workspaceId } : undefined;
-    return this.request<MotionUser[]>('GET', '/users', undefined, params);
+    const res = await this.request<MotionUser[] | { users: MotionUser[] }>(
+      'GET',
+      '/users',
+      undefined,
+      params
+    );
+    return Array.isArray(res) ? res : (res?.users ?? []);
   }
 
   // Schedule methods
