@@ -72,6 +72,25 @@ export class MotionApiClient {
     }) as Promise<T>;
   }
 
+  // Beta endpoints (e.g. custom fields) live under /beta/ rather than /v1/.
+  // Pass an absolute URL so axios ignores the v1 baseURL.
+  private async requestBeta<T>(
+    method: string,
+    path: string,
+    data?: any,
+    params?: any
+  ): Promise<T> {
+    return this.queue.add(async () => {
+      const response = await this.axios.request<T>({
+        method,
+        url: `https://api.usemotion.com/beta${path}`,
+        data,
+        params,
+      });
+      return response.data;
+    }) as Promise<T>;
+  }
+
   // Workspace methods
   async listWorkspaces(): Promise<MotionWorkspace[]> {
     // Motion API wraps the array in `{ workspaces: [...] }` — unwrap defensively
@@ -211,46 +230,87 @@ export class MotionApiClient {
     return this.request<void>('DELETE', `/comments/${commentId}`);
   }
 
-  // Custom field methods
-  async listCustomFields(workspaceId?: string): Promise<MotionCustomField[]> {
-    const params = workspaceId ? { workspaceId } : undefined;
-    return this.request<MotionCustomField[]>('GET', '/custom-fields', undefined, params);
+  // Custom field methods (Motion beta API)
+  // Endpoints documented at:
+  //   https://docs.usemotion.com/api-reference/custom-fields
+  // Field definitions are workspace-scoped; values are scoped to a task or project.
+
+  async listCustomFields(workspaceId: string): Promise<MotionCustomField[]> {
+    return this.requestBeta<MotionCustomField[]>(
+      'GET',
+      `/workspaces/${workspaceId}/custom-fields`
+    );
   }
 
   async createCustomField(params: {
     name: string;
     type: string;
     workspaceId: string;
-    options?: string[];
+    options?: Array<string | { value: string; color?: string }>;
+    metadata?: Record<string, any>;
   }): Promise<MotionCustomField> {
-    return this.request<MotionCustomField>('POST', '/custom-fields', params);
+    const { workspaceId, options, metadata, ...rest } = params;
+    const body: Record<string, any> = { ...rest };
+    if (metadata) body.metadata = { ...metadata };
+    if (options && options.length > 0) {
+      const palette = ['blue', 'green', 'orange', 'purple', 'pink', 'red', 'yellow', 'gray'];
+      body.metadata = {
+        ...body.metadata,
+        options: options.map((opt, i) => {
+          const fallbackColor = palette[i % palette.length];
+          if (typeof opt === 'string') return { value: opt, color: fallbackColor };
+          return { value: opt.value, color: opt.color ?? fallbackColor };
+        }),
+      };
+    }
+    return this.requestBeta<MotionCustomField>(
+      'POST',
+      `/workspaces/${workspaceId}/custom-fields`,
+      body
+    );
   }
 
-  async addCustomFieldToTask(taskId: string, customFieldId: string, value: any): Promise<void> {
-    return this.request<void>('POST', '/custom-fields/add-to-task', {
-      taskId,
-      customFieldId,
+  async deleteCustomField(workspaceId: string, customFieldId: string): Promise<void> {
+    return this.requestBeta<void>(
+      'DELETE',
+      `/workspaces/${workspaceId}/custom-fields/${customFieldId}`
+    );
+  }
+
+  async addCustomFieldToTask(
+    taskId: string,
+    customFieldInstanceId: string,
+    value: { type: string; value: any }
+  ): Promise<unknown> {
+    return this.requestBeta<unknown>('POST', `/custom-field-values/task/${taskId}`, {
+      customFieldInstanceId,
       value,
     });
   }
 
   async addCustomFieldToProject(
     projectId: string,
-    customFieldId: string,
-    value: any
-  ): Promise<void> {
-    return this.request<void>('POST', '/custom-fields/add-to-project', {
-      projectId,
-      customFieldId,
+    customFieldInstanceId: string,
+    value: { type: string; value: any }
+  ): Promise<unknown> {
+    return this.requestBeta<unknown>('POST', `/custom-field-values/project/${projectId}`, {
+      customFieldInstanceId,
       value,
     });
   }
 
-  async removeCustomFieldFromTask(taskId: string, customFieldId: string): Promise<void> {
-    return this.request<void>('DELETE', '/custom-fields/delete-from-task', {
-      taskId,
-      customFieldId,
-    });
+  async removeCustomFieldFromTask(taskId: string, valueId: string): Promise<void> {
+    return this.requestBeta<void>(
+      'DELETE',
+      `/custom-field-values/task/${taskId}/custom-fields/${valueId}`
+    );
+  }
+
+  async removeCustomFieldFromProject(projectId: string, valueId: string): Promise<void> {
+    return this.requestBeta<void>(
+      'DELETE',
+      `/custom-field-values/project/${projectId}/custom-fields/${valueId}`
+    );
   }
 
   // Recurring task methods

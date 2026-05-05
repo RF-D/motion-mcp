@@ -94,6 +94,19 @@ export interface MotionSchedule {
   tasks: MotionTask[];
 }
 
+export interface MotionCustomFieldOption {
+  id: string;
+  value: string;
+  color: string;
+  deletedTime?: string | null;
+}
+
+export interface MotionCustomFieldMetadata {
+  format?: 'plain' | 'formatted' | 'percent';
+  toggle?: boolean;
+  options?: MotionCustomFieldOption[];
+}
+
 export interface MotionCustomField {
   id: string;
   name: string;
@@ -110,8 +123,8 @@ export interface MotionCustomField {
     | 'phone'
     | 'checkbox'
     | 'relatedTo';
-  options?: string[]; // For select/multiSelect types
   workspaceId: string;
+  metadata?: MotionCustomFieldMetadata;
 }
 
 export type MotionCustomFieldValue =
