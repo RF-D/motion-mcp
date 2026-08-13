@@ -1,6 +1,7 @@
 import { MotionApiClient } from '../api/client.js';
 import { z } from 'zod';
 import { Tool } from '../types/tool.js';
+import { normalizeDuration } from '../types/duration.js';
 
 export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
   return [
@@ -65,6 +66,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
         });
 
         const validated = schema.parse(args);
+        validated.duration = normalizeDuration(validated.duration);
         return await client.createRecurringTask(validated);
       },
     },
@@ -124,6 +126,7 @@ export function registerRecurringTaskTools(client: MotionApiClient): Tool[] {
         });
 
         const { recurringTaskId, ...updateParams } = schema.parse(args);
+        updateParams.duration = normalizeDuration(updateParams.duration);
 
         // Filter out undefined values
         const filteredParams: any = {};
