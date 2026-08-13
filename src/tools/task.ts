@@ -1,6 +1,7 @@
 import { MotionApiClient } from '../api/client.js';
 import { z } from 'zod';
 import { Tool } from '../types/tool.js';
+import { normalizeDuration } from '../types/duration.js';
 
 export function registerTaskTools(client: MotionApiClient): Tool[] {
   return [
@@ -143,6 +144,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
         });
 
         const validated = schema.parse(args);
+        validated.duration = normalizeDuration(validated.duration);
         return await client.createTask(validated);
       },
     },
@@ -191,6 +193,7 @@ export function registerTaskTools(client: MotionApiClient): Tool[] {
         });
 
         const { taskId, ...updateParams } = schema.parse(args);
+        updateParams.duration = normalizeDuration(updateParams.duration);
         return await client.updateTask(taskId, updateParams);
       },
     },
